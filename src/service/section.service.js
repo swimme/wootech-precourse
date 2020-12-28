@@ -15,25 +15,51 @@ export default class SectionService {
     return sections;
   }
 
-  findSectionsByStation(stationName) {
-    const allSections = this.findAllSections();
-
-    const sectionsOfUpwardStation = allSections.filter((section) => {
-      return section.upwardStation === stationName || section.upwardStation === stationName;
-    });
-
-    return sectionsOfUpwardStation;
-  }
-
-  findShortestDistancePath(departureStation, arrivalStation) {
+  findShortestPath(departureStation, arrivalStation, option) {
     const dijkstra = new Dijkstra();
     const allSections = this.findAllSections();
 
     allSections.forEach((section) => {
-      dijkstra.addEdge(section.upwardStation, section.downwardStation, section.distance);
+      dijkstra.addEdge(section.upwardStation, section.downwardStation, section[option]);
     });
 
-    const result = dijkstra.findShortestPath(departureStation, arrivalStation);
-    return result;
+    const shortestPath = dijkstra.findShortestPath(departureStation, arrivalStation);
+    return shortestPath;
+  }
+
+  findSectionByStations(departureStation, arrivalStation) {
+    const allSections = this.findAllSections();
+
+    const section = allSections.filter((section) => {
+      return (
+        (section.upwardStation === departureStation &&
+          section.downwardStation === arrivalStation) ||
+        (section.upwardStation === arrivalStation && section.downwardStation === departureStation)
+      );
+    });
+
+    return section;
+  }
+
+  getPathDistance(sectionNames) {
+    let totalDistance = 0;
+
+    for (let i = 0; i < sectionNames.length - 1; i++) {
+      const section = this.findSectionByStations(sectionNames[i], sectionNames[i + 1]);
+      totalDistance += section[0].distance;
+    }
+
+    return totalDistance;
+  }
+
+  getPathTime(sectionNames) {
+    let totalTime = 0;
+
+    for (let i = 0; i < sectionNames.length - 1; i++) {
+      const section = this.findSectionByStations(sectionNames[i], sectionNames[i + 1]);
+      totalTime += section[0].time;
+    }
+
+    return totalTime;
   }
 }

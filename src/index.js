@@ -52,22 +52,28 @@ export default class App {
       const searchType = this.getSearchTypeInput();
       this.validateStationNameLength(departureStation, arrivalStation);
       this.validateStationExist(departureStation, arrivalStation);
+      const pathSections = this.sectionService.findShortestPath(
+        departureStation,
+        arrivalStation,
+        searchType
+      );
+      const totalDistance = this.sectionService.getPathDistance(pathSections);
+      const totalTime = this.sectionService.getPathTime(pathSections);
 
-      const paths = this.sectionService.findShortestPath(departureStation, arrivalStation);
-      this.renderPathTable(paths);
+      this.renderPathTable(totalDistance, totalTime, pathSections);
     } catch (error) {
       alert(error);
     }
   }
 
-  renderPathTable(paths) {
+  renderPathTable(totalDistance, totalTime, pathSections) {
     const pathRowHTML = `
       <tr>
-        <td> ${paths.length}</td>
-        <td> </td>
+        <td> ${totalDistance}km </td>
+        <td> ${totalTime}분 </td>
       </tr>
       <tr>
-       <td colspan="2">${paths.join("->")} </td>
+       <td colspan="2">${pathSections.join("->")} </td>
       </tr>
     `;
     const table = document.getElementById("result-table").querySelector("tbody");
