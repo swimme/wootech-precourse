@@ -25,32 +25,11 @@ export default class SectionService {
     return sectionsOfUpwardStation;
   }
 
-  trackPath(departureStation, arrivalStation, paths) {
-    const sectionsOfDepartureStation = this.findSectionsByStation(departureStation);
-
-    for (let section of sectionsOfDepartureStation) {
-      paths.push(section);
-
-      if (section.downwardStation === arrivalStation) {
-        return paths;
-      }
-
-      this.trackPath(section.downwardStation, arrivalStation, paths);
-    }
-  }
-
-  findAllPaths(departureStation, arrivalStation) {
-    const allPaths = [];
-    this.trackPath(departureStation, arrivalStation, allPaths);
-
-    return allPaths;
-  }
-
   findShortestDistancePath(departureStation, arrivalStation) {
     const dijkstra = new Dijkstra();
-    const allPaths = this.findAllPaths(departureStation, arrivalStation);
+    const allSections = this.findAllSections();
 
-    allPaths.forEach((section) => {
+    allSections.forEach((section) => {
       dijkstra.addEdge(section.upwardStation, section.downwardStation, section.distance);
     });
 
