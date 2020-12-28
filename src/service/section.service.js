@@ -4,7 +4,6 @@ import Dijkstra from "../utils/Dijkstra.js";
 export default class SectionService {
   constructor() {
     this.lines = lines;
-    this.paths = [];
   }
 
   findAllSections() {
@@ -12,53 +11,50 @@ export default class SectionService {
     for (let line of lines) {
       sections.push(...line.sections);
     }
+
     return sections;
   }
 
-  findPath(departureStation, arrivalStation, paths) {
-    const sections = this.findSectionsByDepartureStation(departureStation);
+  findSectionsByStation(stationName) {
+    const allSections = this.findAllSections();
 
-    for (let section of sections) {
-      //base contidition
-      if (section.arrivalStation === arrivalStation) {
-        paths.push(section);
-        this.paths.push(paths);
-        return paths;
-      }
-      const newPaths = [...paths];
-      newPaths.push(section);
-      this.findPath(section.arrivalStation, arrivalStation, newPaths);
-    }
-    return this.paths;
+    const sectionsOfUpwardStation = allSections.filter((section) => {
+      return section.upwardStation === stationName || section.upwardStation === stationName;
+    });
+
+    return sectionsOfUpwardStation;
   }
 
-  findShortestPath(departureStation, arrivalStation) {
-    this.paths = [];
-    const dijkstra = new Dijkstra();
-    const paths = this.findPath(departureStation, arrivalStation, []);
-    console.log(paths);
+  trackPath(departureStation, arrivalStation, paths) {
+    const sectionsOfDepartureStation = this.findSectionsByStation(departureStation);
 
-    paths.forEach((path) => {
-      if (paths.length === 1) {
-        dijkstra.addEdge(path.departureStation, path.arrivalStation, path.distance);
-      } else {
-        path.forEach((section) => {
-          dijkstra.addEdge(section.departureStation, section.arrivalStation, section.distance);
-        });
+    for (let section of sectionsOfDepartureStation) {
+      paths.push(section);
+
+      if (section.downwardStation === arrivalStation) {
+        return paths;
       }
+
+      this.trackPath(section.downwardStation, arrivalStation, paths);
+    }
+  }
+
+  findAllPaths(departureStation, arrivalStation) {
+    const allPaths = [];
+    this.trackPath(departureStation, arrivalStation, allPaths);
+
+    return allPaths;
+  }
+
+  findShortestDistancePath(departureStation, arrivalStation) {
+    const dijkstra = new Dijkstra();
+    const allPaths = this.findAllPaths(departureStation, arrivalStation);
+
+    allPaths.forEach((section) => {
+      dijkstra.addEdge(section.upwardStation, section.downwardStation, section.distance);
     });
 
     const result = dijkstra.findShortestPath(departureStation, arrivalStation);
     return result;
-  }
-
-  findSectionsByDepartureStation(departureStationName) {
-    const sections = this.findAllSections();
-
-    const targets = sections.filter((section) => {
-      return section.departureStation === departureStationName;
-    });
-
-    return targets;
   }
 }
